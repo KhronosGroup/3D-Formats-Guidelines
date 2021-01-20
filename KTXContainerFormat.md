@@ -1,4 +1,4 @@
-# Reading KTX 2.0 Containers
+# KTX Container Format
 
 Universal Textures are comprised of two formats, written to a single file:
 
