@@ -8,7 +8,7 @@ How artists and content creators can compress glTF textures with [Basis Universa
 
 Textures in a glTF file can be compressed into .ktx2 GPU textures using Basis Universal compression, which offers faster GPU upload and less GPU memory consumption than PNG or JPEG textures. PNGs and JPEGs are fully uncompressed when loaded in GPU memory. 
 
-![A lamp model, before and after compression](figures\lamp-whole-before-after.jpg)
+![A lamp model, before and after compression](figures/lamp-whole-before-after.jpg)
 
 Authoring compressed GPU textures often requires more careful tuning to maintain image quality, but this extra effort is worthwhile for applications that need to maintain a smooth framerate while uploading images, or where GPU memory is limited. In certain cases they may also have smaller file sizes than PNG or JPEG textures, but this is not guaranteed. If performance is important, the benefits of compressed GPU textures may outweigh an increase in file size.
 
@@ -24,11 +24,11 @@ There are two Basis Universal compression methods: ETC1S and UASTC. ETC1S offers
 
 1. For example, the Windows installer looks like this: 
 
-![KTX-Software setup for Windows](figures\ktx-setup-windows.jpg)
+![KTX-Software setup for Windows](figures/ktx-setup-windows.jpg)
 
 5. Add KTX-Software to the system path. This is not required, but it will make it easier to run the command line tool. 
 
-![KTX-Software setup options](figures\ktx-setup-options.jpg)
+![KTX-Software setup options](figures/ktx-setup-options.jpg)
 
 ## Installing Node.js
 
@@ -40,11 +40,11 @@ Node.js includes the NPM node package manager, which allows you to run the javas
 
 1. For example, the Windows installer looks like this: 
 
-![Node.js setup for Windows](figures\nodjs-setup-windows.jpg)
+![Node.js setup for Windows](figures/nodjs-setup-windows.jpg)
 
 4. You can skip “Tools for Native Modules” step by unsetting the checkbox here:
 
-![Node.js setup Tools for Native Modules](figures\nodjs-setup-tools.jpg)
+![Node.js setup Tools for Native Modules](figures/nodjs-setup-tools.jpg)
 
 ## Installing glTF-Transform
 
@@ -74,7 +74,7 @@ gltf-transform etc1s input.glb output.glb --slots "!normalTexture" --verbose
 * `--slots` lets you include or exclude texture types, which you specify in the next part.
 * `"!normalTexture"` tells glTF Transform to compress all textures in the GLB using ETC1S except for the normal maps. 
 * `--verbose shows` step by step what glTF Transform is doing. This is helpful as a progress bar to make sure it’s working, and to help you figure out if you included the right options or not. For example if you use --verbose you should see the normal maps being skipped: 
-  ![screenshot of verbose commands](figures\verbose-commands.jpg)
+  ![screenshot of verbose commands](figures/verbose-commands.jpg)
 
 2. Compress normal maps with UASTC and all others with ETC1S:
 ```
@@ -102,13 +102,13 @@ Try different compression settings! To learn all about the settings, type either
 
 To see a list of texture slots in a GLB use the command `gltf-transform inspect input.glb` This will show the dimensions and file sizes for each texture. This is particularly useful to identify the names of the `--slots` so you can apply different compression settings to different texture types. It also shows the file size for each texture and the size it will be in GPU memory. 
 
-![inspect command results](figures\inspect-results.jpg)
+![inspect command results](figures/inspect-results.jpg)
 
 ## Converting to KTX with RapidCompact
 
 [RapidCompact](https://rapidcompact.com/) is a commercial cloud-based service for optimizing 3D models. They offer a wizard-based approach to compression & optimization.
 
-![RapidCompact wizard](figures\rapidcompact-wizard.jpg)
+![RapidCompact wizard](figures/rapidcompact-wizard.jpg)
 
 1. Create an account and upload your model https://app.rapidcompact.com/app/models/upload
 
@@ -120,7 +120,7 @@ To see a list of texture slots in a GLB use the command `gltf-transform inspect 
 
 1. When RapidCompact is done processing, you’ll see a report page with an embedded 3D view, where you can preview and download your compressed models.
 
-![RapidCompact report](figures\rapidcompact-report.jpg)
+![RapidCompact report](figures/rapidcompact-report.jpg)
 
 ## Compressing Individual Textures
 
@@ -128,7 +128,7 @@ It’s also possible to convert individual image files to KTX with Basis Univers
 
 This tool offers the most flexibility and control over compression options. After conversion, the ktx files need to be inserted into the glTF file, either replacing existing textures or being added as new ones.
 
-![toktx header](figures\toktx-header.jpg)
+![toktx header](figures/toktx-header.jpg)
 
 ## Converting Between .glTF and .GLB Formats
 
@@ -154,10 +154,10 @@ You may additionally apply [Draco mesh compression](https://github.com/google/dr
 ## Compression Examples
 This stained glass lamp model from Wayfair uses five 2048x2048 PNGs, seven 1024x1024 PNGs, five 512x512 PNGs, and two 256x256 PNGs.
 
-![Lamp before and after compression](figures\lamp-before-after.jpg)
+![Lamp before and after compression](figures/lamp-before-after.jpg)
 Left: 27.9MB with all PNG textures (113.5MB on GPU). Right: 11.8MB with all KTX (11.5MB on GPU). 
 
-![Lamp with three compression versions](figures\lamp-three-versions.jpg)
+![Lamp with three compression versions](figures/lamp-three-versions.jpg)
 
 1. Original GLB = **29.3 MB**. It uses all PNG textures.
 
@@ -165,14 +165,14 @@ Left: 27.9MB with all PNG textures (113.5MB on GPU). Right: 11.8MB with all KTX 
 
 1. Compressed with glTF-Transform. All maps compressed with ETC1S = **4.5 MB**. This is 15% of the original size. Similar artifacts as the previous file, but now the normal maps also show blocky artifacts.
 
-![The whole lamp, before and after](figures\lamp-whole-before-after.jpg)
+![The whole lamp, before and after](figures/lamp-whole-before-after.jpg)
 From an average viewing distance, the artifacts are fairly minor, but the savings are drastic.
 
 This flight helmet model from Microsoft uses twelve 2048x2048 PNGs and three 1024x1024 PNGs.
-![Flight Helmet before and after](figures\helmet-before-after.jpg)
+![Flight Helmet before and after](figures/helmet-before-after.jpg)
 Left: 43 MB with PNG textures. Right: 29 MB with KTX textures.
 
-![Flight helmet chart with compression sizes](figures\helmet-sizes-chart.jpg)
+![Flight helmet chart with compression sizes](figures/helmet-sizes-chart.jpg)
 
 Live demo of the Flight Helmet, comparing PNG and KTX: https://playground.babylonjs.com/#PEFFA8#8
 
