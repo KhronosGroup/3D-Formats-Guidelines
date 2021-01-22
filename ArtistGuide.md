@@ -128,8 +128,6 @@ It’s also possible to convert individual image files to KTX with Basis Univers
 
 This tool offers the most flexibility and control over compression options. After conversion, the ktx files need to be inserted into the glTF file, either replacing existing textures or being added as new ones.
 
-![toktx header](figures/toktx-header.jpg)
-
 ## Converting Between .glTF and .GLB Formats
 
 To compress with KTX, it’s easiest to work with a binary GLB file since all the textures are contained in one asset. This isn’t strictly necessary, but it does make processing easier.
