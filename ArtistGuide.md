@@ -1,5 +1,7 @@
 # KTX Asset Compression Workflow
 
+![KTX logo](figures/KTX_100px_Sep20.jpg)
+
 How artists and content creators can compress glTF textures with [Basis Universal texture compression](https://github.com/KhronosGroup/KTX-Software) and the glTF extension [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_basisu/).
 
 ## Why use KTX?
@@ -121,6 +123,8 @@ To see a list of texture slots in a GLB use the command `gltf-transform inspect 
 ![RapidCompact report](figures/rapidcompact-report.jpg)
 
 ## Compressing Individual Textures
+
+![KTX logo](figures/KTX_100px_Sep20.jpg)
 
 It’s also possible to convert individual image files to KTX with Basis Universal compression, using the command line tool [Khronos Texture Tools](https://github.khronos.org/KTX-Software/ktxtools/toktx.html) (toktx).
 
