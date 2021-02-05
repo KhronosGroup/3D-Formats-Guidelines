@@ -122,13 +122,52 @@ To see a list of texture slots in a GLB use the command `gltf-transform inspect 
 
 ![RapidCompact report](figures/rapidcompact-report.jpg)
 
+## Converting to KTX with Gestaltor
+
+[Gestaltor](https://gestaltor.io/) is a visual glTF editor to directly edit glTF and/or GLB files. The tool is free for non-commercial usage.
+
+1. Select the image to convert in the Images widget. The image is then visible in the Inspector widget:
+
+![Gestaltor Inspector widget](figures/gestaltor_figure1.jpg)
+
+Please note, that the current Mime Type is `image/png` and the file size is around **51.32 KB**.
+
+2. Press on the Convert image button and select ktx2 as the Format.
+
+![Gestaltor Format interface](figures/gestaltor_figure2.jpg)
+
+3. Choose the KTX Compression, which is ETC1S + BasisLZ in this case. Press Apply.
+
+![Gestaltor Inspector widget with image data](figures/gestaltor_figure3.jpg)
+
+The image does now have the Mime Type `image/ktx2`, and the file size has been reduced to **8.84 KB**.
+
+4. The required `KHR_texture_basisu` extension is activated automatically in the glTF for the texture using this image:
+
+![Gestaltor Inspector widget with basisu](figures/gestaltor_figure4.jpg)
+
+After storing the 3D asset as a glTF file, the KTX asset is available on the file system as well.
+
 ## Compressing Individual Textures
 
-![KTX logo](figures/KTX_100px_Sep20.jpg)
+![toktx command line](figures/toktx_cmd.jpg)
 
-It’s also possible to convert individual image files to KTX with Basis Universal compression, using the command line tool [Khronos Texture Tools](https://github.khronos.org/KTX-Software/ktxtools/toktx.html) (toktx).
+It’s also possible to convert individual image files to KTX with Basis Universal compression, using the command line tool [Khronos Texture Tools](https://github.khronos.org/KTX-Software/ktxtools/toktx.html) (`toktx`).
 
-This tool offers the most flexibility and control over compression options. After conversion, the ktx files need to be inserted into the glTF file, either replacing existing textures or being added as new ones.
+This tool offers the most flexibility and control over all compression options. After converting a texture, the new ktx files will need to be inserted into a glTF file, by either replacing existing textures or being added as new ones.
+
+### ETC1S / BasisLZ Parameters
+The `toktx` command line tool exposes three main codec parameters related to ETC1S / BasisLZ:
+* **Use ETC1S / BasisLZ** (`--bcmp`)
+* **ETC1S / BasisLZ Compression Level** (`--clevel <level>`): Integer value of [0, 5] range, default is 1. Higher values are slower, but give higher quality.
+* **ETC1S / BasisLZ Quality Level** (`--qlevel <level>`): Integer value of [1, 255] range, default is 128. Lower gives better compression/lower quality/faster. Higher gives less compression/higher quality/slower.
+
+### UASTC Parameters
+The `toktx` command line tool exposes four UASTC codec parameters:
+* **Quality Level** (`--uastc [<level>]`): Integer value of [0, 4] range, default is 2. 0 - fastest/lowest quality, 3 - slowest practical option, 4 - impractically slow / highest achievable quality.
+* **RDO Quality Scalar** (`--uastc_rdo_q [<quality>]`): Floating-point value of [0.001, 10.0] range, default is 1.0. Lower values lead to higher quality / larger LZ-compressed files, higher values - to lower quality / smaller LZ compressed files. Good range to try is [0.2, 4.0].
+* **RDO Dictionary Byte Length** (`--uastc_rdo_d [<size>]`): Integer value of [256, 65536] range, default is 32768. Lower values lead to faster but less efficient compression.
+* **Zstandard Compression Level** (`--zcmp [<level>]`): Apply Zstandard lossless compression after UASTC compression. The range is [1, 22], the default is 3. Lower values lead to faster processing but give less compression. Values above 20 should be used with caution as they require more memory during compression.
 
 ## Converting Between .glTF and .GLB Formats
 
