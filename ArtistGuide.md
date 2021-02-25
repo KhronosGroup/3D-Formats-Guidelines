@@ -6,13 +6,13 @@ How artists and content creators can compress glTF textures with [Basis Universa
 
 ## Why use KTX?
 
-Textures in a glTF file can be compressed into .ktx2 GPU textures using Basis Universal compression, which offers faster GPU upload and less GPU memory consumption than PNG or JPEG textures. PNGs and JPEGs are fully uncompressed when loaded in GPU memory. 
+Textures in a glTF file can be compressed into .ktx2 GPU textures using Basis Universal compression, which offers faster GPU upload and less GPU memory consumption than PNG or JPEG textures. PNGs and JPEGs are fully uncompressed when loaded in GPU memory, but KTX stays compressed on the GPU. 
 
 ![A lamp model, before and after compression](figures/lamp-whole-before-after.jpg)
 
 Authoring compressed GPU textures often requires more careful tuning to maintain image quality, but this extra effort is worthwhile for applications that need to maintain a smooth framerate while uploading images, or where GPU memory is limited. In certain cases they may also have smaller file sizes than PNG or JPEG textures, but this is not guaranteed. If performance is important, the benefits of compressed GPU textures may outweigh an increase in file size.
 
-There are two Basis Universal compression methods: ETC1S and UASTC. ETC1S offers lower size and lower quality than UASTC. In some cases it may be useful to increase the resolution of the texture, to minimize compression artifacts while still retaining a smaller file size. Consider using less aggressive compression settings for normal maps than for other texture types: you may want to use UASTC for normal maps and ETC1S for other textures, for example.
+There are two Basis Universal compression methods: ETC1S and UASTC. ETC1S offers lower size and lower quality than UASTC. In some cases it may be useful to double the resolution of the texture to minimize compression artifacts while still retaining a smaller file size. Consider using less aggressive compression settings for normal maps than for other texture types: you may want to use UASTC for normal maps and ETC1S for other textures, for example.
 
 ## Installing KTX Software
 
@@ -48,7 +48,7 @@ Node.js includes the NPM node package manager, which allows you to run the javas
 
 ## Installing glTF-Transform
 
-glTF-Transform is used for compressing textures inside glTF using KTX texture compression.
+[glTF-Transform](https://gltf-transform.donmccurdy.com/cli.html) is used for compressing textures inside glTF using KTX texture compression.
 
 1. Open the OS command prompt (or PowerShell in Windows). 
 
@@ -191,31 +191,38 @@ This is a lossless conversion. The glTF assets (JSON, .bin, and images) are simp
 You may additionally apply [Draco mesh compression](https://github.com/google/draco) using glTF Pipeline, however this is generally a lossy operation, so it should be done as a final step after KTX conversion.
 
 ## Compression Examples
-This stained glass lamp model from Wayfair uses five 2048x2048 PNGs, seven 1024x1024 PNGs, five 512x512 PNGs, and two 256x256 PNGs.
+
+### StainedGlassLamp
+
+This [stained glass lamp model](https://github.com/KhronosGroup/glTF-Sample-Models/pull/292) from Wayfair uses JPG and PNG textures in a range of dimensions from 2048 to 256. The overall file size is 17 MB, but it increases to 138 MB in GPU memory because the textures must be uncompressed to use them for rendering.
 
 ![Lamp before and after compression](figures/lamp-before-after.jpg)
-Left: 27.9MB with all PNG textures (113.5MB on GPU). Right: 11.8MB with all KTX (11.5MB on GPU). 
 
-![Lamp with three compression versions](figures/lamp-three-versions.jpg)
+Left: JPG & PNG textures. Right: KTX textures. 
 
-1. Original GLB = **29.3 MB**. It uses all PNG textures.
+Compressing the textures with KTX reduces the file size to 5 MB, and it becomes only 24 MB in GPU memory. That's about 31% the file size, and just 18% the GPU size!
 
-1. Compressed with glTF-Transform. Normal maps compressed with UASTC and all other maps with ETC1S = **12.2 MB**. This is 42% of the original size. It has a few blocky artifacts, but they’re not very obvious unless you zoom in close.
-
-1. Compressed with glTF-Transform. All maps compressed with ETC1S = **4.5 MB**. This is 15% of the original size. Similar artifacts as the previous file, but now the normal maps also show blocky artifacts.
+![Lamp chart with compression sizes](figures/lamp-chart.png)
 
 ![The whole lamp, before and after](figures/lamp-whole-before-after.jpg)
-From an average viewing distance, the artifacts are fairly minor, but the savings are drastic.
 
-This flight helmet model from Microsoft uses twelve 2048x2048 PNGs and three 1024x1024 PNGs.
+From an average viewing distance, the artifacts on the lamp are fairly minor, but the savings are drastic.
+
+
+### FlightHelmet
+
+This [flight helmet model](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet) from Microsoft uses twelve 2048x2048 PNGs and three 1024x1024 PNGs.
+
 ![Flight Helmet before and after](figures/helmet-before-after.jpg)
-Left: 43 MB with PNG textures. Right: 29 MB with KTX textures.
 
-![Flight helmet chart with compression sizes](figures/helmet-sizes-chart.jpg)
+Left: PNG textures, file size 48.37 MB, GPU size 288.44 MB. Right: KTX textures, file size 33.97 MB, GPU size 63.35 MB.
+
+![Flight helmet chart with compression sizes](figures/helmet-chart.png)
 
 Live demo of the Flight Helmet, comparing PNG and KTX: https://playground.babylonjs.com/#PEFFA8#8
 
-## Tips and Tricks
+## KTX Tips and Tricks
+
 * The [3D Commerce Asset Creation Guidelines](https://github.com/KhronosGroup/3DC-Asset-Creation/blob/main/asset-creation-guidelines/RealtimeAssetCreationGuidelines.md) have important information about how to create well-formed models.
 * Before compression, textures should be stored as 8 bit per channel RGB or RGBA. Application developers are encouraged to evaluate uncompressed textures fidelity and performance within actual scenes before applying compression.
 * Power-of-two dimensions are almost always required for glTF textures: 2048, 1024, 512, etc. glTF-Transform has a --power-of-two flag to do the resizing for you, but starting with the intended size is better. Even when targeting newer platforms that support non-power-of-two texture dimensions, the texture dimensions still must be multiples of 4 to work with Basis Universal.
