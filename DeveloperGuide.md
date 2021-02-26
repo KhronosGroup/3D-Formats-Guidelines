@@ -1,4 +1,4 @@
-# glTF Universal Textures Developer Guide
+# KTX 2.0 / Basis Universal Textures — Developer Guide
 
 <!-- Software packages overview TBD -->
 
