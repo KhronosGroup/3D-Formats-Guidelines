@@ -1,4 +1,4 @@
-# KTX Asset Compression Workflow
+# KTX Artist Guide
 
 ![KTX logo](figures/KTX_100px_Sep20.jpg)
 
@@ -60,48 +60,61 @@ npm install --global @gltf-transform/cli
 
 ## Compressing to KTX with glTF-Transform
 
-With everything installed, you can now compress your glTF files. There are different compression options available; here are a few  methods to get you started. 
+With everything installed, you can now compress your glTF files. There are different compression options available; here are a few methods to get you started. 
 
-1. Compress all textures using ETC1S except the normal maps:
+### METHOD 1: UASTC + ETC1S
+Compress normal and occlusion/roughness/metalness textures with UASTC, and all others with ETC1S:
+```
+gltf-transform uastc input.glb output1.glb --level 4 --rdo-quality 4 --slots "{normalTexture,occlusionTexture,metallicRoughnessTexture}" --zstd 18 --verbose
+gltf-transform etc1s output1.glb output2.glb --quality 255 --verbose
+```
+
+* `gltf-transform` is the tool itself
+* `uastc` is the compression method. This compresses less than etc1s, but tends to create less blocky artifacts. It creates less artifacts on textures that have uncorrelated RGB values, like ORM maps, than ETC1S does. 
+* `input.glb` is the file you want to compress, with PNG and/or JPEG textures inside of it.
+* `output1.glb` is the file you want to save, with the new KTX textures. The first step creates a GLB with some textures in UASTC, keeping the rest in their original formats. The second step then compresses the remaining originals with ETC1S.
+* `--level 4` is a high quality setting. It produces the highest achievable quality, but can be very slow. If it's too slow, try 3 instead.
+* `--rdo-quality 4` is a medium quality setting, but makes smaller files. A good range to test is 0.2 to 4.
+* `--slots` lets you include or exclude texture types, using the following setting:
+* `"{normalTexture,occlusionTexture,metallicRoughnessTexture}"` tells glTF Transform to compress only normal and ORM textures with UASTC. To see a list of texture slots in a GLB use the command `gltf-transform inspect input.glb` This will show the dimensions and file sizes for each texture. This is particularly useful to identify the names of the `--slots` so you can apply different compression settings to different texture types.
+* `--verbose` shows step by step what glTF Transform is doing. On Windows there’s no progress indicator during compression, only the blinking cursor. `--verbose` is helpful as a progress bar to make sure it’s working, and to help you figure out if you included the right options or not. 
+* `--quality 255` in the second step tells glTF-Transform to use the highest quality for ETC1S, but it applies less compression, and it takes longer to compress the files. Use this when quality is more important than conversion speed.
+
+Note this is two separate commands. The 1st command compresses only normal & ORM maps using UASTC. The 2nd command then compresses all the remaining textures using ETC1S. Start the 2nd command only after the 1st is complete. The 2nd command doesn’t need a `--slots "!{normalTexture,occlusionTexture,metallicRoughnessTexture}"` argument to omit the normal/ORM maps, because glTF-Transform will not recompress existing KTX files. It only compresses non-KTX textures.
+
+### METHOD 2: ETC1S
+Compress all textures using ETC1S:
  
 ```
-gltf-transform etc1s input.glb output.glb --slots "!normalTexture" --verbose
+gltf-transform etc1s input.glb output.glb --verbose
 ```
-* `gltf-transform` is the tool itself
-* `etc1s` is the compression method. This compresses more than uastc, but tends to create more blocky artifacts.
-* `input.glb` is the file you want to compress, with PNG and/or JPEG textures inside of it.
-* `output.glb` is the file you want to save, with the new KTX textures.
-* `--slots` lets you include or exclude texture types, which you specify in the next part.
-* `"!normalTexture"` tells glTF Transform to compress all textures in the GLB using ETC1S except for the normal maps. 
-* `--verbose shows` step by step what glTF Transform is doing. This is helpful as a progress bar to make sure it’s working, and to help you figure out if you included the right options or not. For example if you use --verbose you should see the normal maps being skipped: 
-  ![screenshot of verbose commands](figures/verbose-commands.jpg)
+* This produces the smallest files, and usually creates more blocky artifacts. 
+* Use this when file size and memory size are more important than highest visual quality.
 
-2. Compress normal maps with UASTC and all others with ETC1S:
+### METHOD 3: UASTC
+Compress all textures with UASTC:
 ```
-gltf-transform uastc input.glb output1.glb --slots "normalTexture" --verbose
-gltf-transform etc1s output1.glb output2.glb --verbose
+gltf-transform uastc input.glb output.glb --level 4 --rdo-quality 4 --zstd 18 --verbose
 ```
-* Note this is two separate commands. The 1st command compresses only normal maps using UASTC. The 2nd command then compresses all the remaining textures using ETC1S. Start the 2nd command only after the 1st is complete. 
-* The 2nd command doesn’t need a `--slots "!normalTexture"` argument to omit the normal maps, because glTF-Transform will not recompress existing KTX files. It only compresses non-KTX textures.
+* This can produce a larger file, but usually shows less compression artifacts.
 
-3. Compress all textures with ETC1S except normal maps and ORM maps (which will stay as PNGs), and use the highest quality compression:
-```
-gltf-transform etc1s input.glb output.glb --slots "!{normalTexture,occlusionTexture,metallicRoughnessTexture}" --quality 255
-```
-* Several slots are being ignored together, all the normal maps and ORM maps will not be compressed.
-* `--quality 255` will use the highest possible quality to calculate the compression, but will compress the slowest. Use this when quality is more important than conversion speed.
+### MORE METHODS 
+Try different compression settings and combinations; adjust to your overall goals for size & quality. Isolate settings to specific texture slots. Textures respond differently from each other to the various compression settings, so a little experimentation can yield better results. 
 
-On Windows there’s no progress indicator during compression, only the blinking cursor. You can include the `--verbose` flag which will show more details while it’s working. The process will show the “info” status line when it’s complete, and it will indicate the before and after file sizes.
-
-Check the output file carefully in your viewer of choice. Look closely, there may be undesirable compression artifacts on different texture types: basecolor, alpha, normal maps, roughness, metalness, occlusion, emissive, etc. You can find a list of glTF viewers using the [glTF Project Explorer](http://github.khronos.org/glTF-Project-Explorer/).
-
-Try different compression settings! To learn all about the settings, type either of these in the command line:
-
+To learn more about the available settings, type either of these in the command line:
 * `gltf-transform help etc1s`
 * `gltf-transform help uastc`
 
-To see a list of texture slots in a GLB use the command `gltf-transform inspect input.glb` This will show the dimensions and file sizes for each texture. This is particularly useful to identify the names of the `--slots` so you can apply different compression settings to different texture types. It also shows the file size for each texture and the size it will be in GPU memory. 
+## Evaluate the Output
+Check compressed files carefully in your viewer of choice. 
+* Look closely, there may be undesirable compression artifacts on different texture types: basecolor, alpha, normal maps, roughness, metalness, occlusion, emissive, etc. 
+* You can find a list of glTF viewers using the [glTF Project Explorer](http://github.khronos.org/glTF-Project-Explorer/).
 
+Use the `INSPECT` command to examine the file sizes for each texture and the sizes they will be in GPU memory.
+```
+gltf-transform inspect input.glb --format md
+```
+An example output of the `INSPECT` command:
 ![inspect command results](figures/inspect-results.jpg)
 
 ## Converting to KTX with RapidCompact
@@ -179,7 +192,7 @@ You can use [glTF Pipeline](https://github.com/CesiumGS/gltf-pipeline) to conver
 
 1. Because you installed Node.js earlier, you can now easily install glTF Pipeline:
 ```
-npm install --global @gltf-pipeline/cli
+npm install -g gltf-pipeline
 ```
 3. Convert a glTF into a GLB:
 ```
