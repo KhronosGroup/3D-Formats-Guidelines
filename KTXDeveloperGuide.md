@@ -1,6 +1,22 @@
 # KTX 2.0 / Basis Universal Textures — Developer Guide
 
-<!-- Software packages overview TBD -->
+## Contents
+
+- [KTX Container Format](#ktx-container-format)
+- [Block-based Compression](#block-based-compression)
+- [ETC1S / BasisLZ Codec](#etc1s--basislz-codec)
+  - [Overview](#overview)
+  - [Data Layout](#data-layout)
+  - [Runtime usage](#runtime-usage)
+  - [Transcode Target Selection (RGB and RGBA)](#transcode-target-selection-rgb-and-rgba)
+  - [Transcode Target Selection (Red)](#transcode-target-selection-red)
+  - [Transcode Target Selection (Red-Green)](#transcode-target-selection-red-green)
+- [UASTC Codec](#uastc-codec)
+  - [Overview](#overview-1)
+  - [Runtime usage](#runtime-usage-1)
+  - [Primary Transcode Targets](#primary-transcode-targets)
+  - [Additional Transcode Targets](#additional-transcode-targets)
+- [GPU API Support](#gpu-api-support)
 
 ## KTX Container Format
 
@@ -13,7 +29,7 @@ When implementing support for compressed textures, developers should be aware of
 3. **GPU compressed pixel format:** A compressed representation of pixel data, understood by the GPU.
   - _Examples: BCn, ASTC, ETC, and PVRTC1_
 
- Portable [glTF 2.0](https://github.com/KhronosGroup/glTF) 3D assets may use compressed textures stored in the [KTX 2.0 Container Format](http://github.khronos.org/KTX-Specification/) (`.ktx2`)<sup>1</sup>, as described by the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension. KTX 2.0 is a relatively simple binary data format, and can be read or written without the use of existing software by referencing the format specification. Several existing implementations are available:
+ Portable [glTF 2.0](https://github.com/KhronosGroup/glTF) 3D assets may use compressed textures stored in the [KTX 2.0 Container Format](https://github.khronos.org/KTX-Specification/) (`.ktx2`)<sup>1</sup>, as described by the [`KHR_texture_basisu`](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_basisu) glTF extension. KTX 2.0 is a relatively simple binary data format, and can be read or written without the use of existing software by referencing the format specification. Several existing implementations are available:
 
 - [KTX-Software](https://github.com/KhronosGroup/KTX-Software/): Official C/C++ libraries for reading, writing, and transcoding KTX files, with optional functionality for instantiating textures in various graphics APIs. Includes [downloadable binary packages](https://github.com/KhronosGroup/KTX-Software/releases) and WebAssembly builds.
 - [KTX-Parse](https://github.com/donmccurdy/KTX-Parse): Lightweight JavaScript/TypeScript/Node.js library for reading and writing KTX files. Transcoding to a GPU compressed format must be handled separately<sup>2</sup>.
@@ -94,56 +110,60 @@ Using ETC1S / BasisLZ data comprises three steps:
 
 ### Transcode Target Selection (RGB and RGBA)
 
-- By design, ETC1S is a strict subset of ETC1 so transcoding it to ETC formats is always preferred. Single-slice textures should be transcoded to ETC1 RGB while dual-slice textures should be transcoded to ETC2 RGBA.
+- By design, ETC1S is a strict subset of ETC1 so transcoding it to ETC formats is always preferred. Single-slice textures should be transcoded to [ETC1 RGB](#etc1-rgb) while dual-slice textures should be transcoded to [ETC2 RGBA](#etc2-rgba).
   > **Note:** ETC1 RGB is a strict subset of ETC2 RGB.
 
   > **Note**: On platforms that support only ETC1, applications could transcode each ETC1S slice to its own ETC1 texture and use two texture samplers simultaneously.
 
-- On desktop GPUs without ETC support, applications should transcode to BC7.
+- On desktop GPUs without ETC support, applications should transcode to [BC7](#bc7).
   > **Note:** BC7 always supports alpha channel. For opaque (single-slice) ETC1S inputs, the reference transcoder produces BC7 blocks with alpha values set to `255`.
 
-- On older desktops without BC7 support, RGB (single-slice) textures should be transcoded to BC1, while RGBA (dual-slice) textures should be transcoded to BC3.
+- On older desktops without BC7 support, RGB (single-slice) textures should be transcoded to [BC1](#bc1-s3tc-rgb), while RGBA (dual-slice) textures should be transcoded to [BC3](#bc3-s3tc-rgba).
 
-- Transcoding to PVRTC1 is also supported but should be used only if other options are not available.
-  > **Note:** The reference PVRTC1 transcoder supports only textures with power-of-2 dimensions.
+- Transcoding to [PVRTC1](#pvrtc1-1) is also supported but should be used only if other options are not available.
+  > **Note:** Most platforms and the reference PVRTC1 transcoder support only textures with power-of-2 dimensions.
 
-- In an unfortunate situation where the platform supports none of aforementioned compressed texture formats, ETC1S data could be decoded to uncompressed RGBA.
+  > **Note:** Apple platforms may reject non-square PVRTC1 textures.
+
+- In an unfortunate situation where the platform supports none of aforementioned compressed texture formats, ETC1S data could be decoded to [uncompressed RGBA](#uncompressed-formats).
 
 ![ETC1S Target Format Selection Flowchart](figures/ETC1S_targets.png)
 
 ### Transcode Target Selection (Red)
 
-- As with RGB data, ETC1 is the most preferred option.
+- As with RGB data, [ETC1 RGB](#etc1-rgb) is the most preferred option as it provides lossless transcoding.
   > **Note**: Green and blue channels will have the same value as red during sampling.
 
-  > **Note**: EAC R11 may be used when sampling from semantically unused channels (Green and Blue) is required to return zeros and texture swizzling is not supported.
+  > **Note**: [EAC R11](#eac-r11) may be used when sampling from semantically unused channels (Green and Blue) is required to return zeros and texture swizzling is not supported.
 
-- On desktop GPUs without ETC1 support, applications should transcode to BC4.
+- On desktop GPUs without ETC1 support, applications should transcode to [BC4](#bc4).
   > **Note**: Green and blue channels will return zeros during sampling.
 
-- On very old desktops without BC4 support, applications should transcode to BC1.
-  > **Note**: Green and blue channels will have the same value as red during sampling. If possible, applications should prefer sampling from green channel of the transcoded texture as it may experience slightly less loss from transcoding.
+- On very old desktops without BC4 support, applications should transcode to [BC1](#bc1-s3tc-rgb).
+  > **Note**: Blue channel will have the same value as red during sampling. Green channel will have a slightly different value because BC1 uses more quantization bits for it.
 
-- Transcoding to PVRTC1 should be used only if other options are not available.
+- Transcoding to [PVRTC1](#pvrtc1-1) should be used only if other options are not available.
   > **Note:** The reference PVRTC1 transcoder supports only textures with power-of-2 dimensions.
+
+  > **Note:** Apple platforms may reject non-square PVRTC1 textures.
 
   > **Note**: Green and blue channels will have the same value as red during sampling.
 
-- As a last resort, ETC1S data could be decoded to uncompressed R8 or RGBA8 pixels.
+- As a last resort, ETC1S data could be decoded to uncompressed [R8](#r8) or [RGBA8](#rgba8) pixels.
 
 ![ETC1S Target Format Selection Flowchart](figures/ETC1S_targets_red.png)
 
 ### Transcode Target Selection (Red-Green)
 
-- Since Red-Green ETC1S textures contain two independently-encoded slices, EAC RG11 is the most preferred option.
+- Since Red-Green ETC1S textures contain two independently-encoded slices, [EAC RG11](#eac-rg11) is the most preferred option.
   > **Note**: Blue channel will return zero during sampling.
 
-  > **Note**: On platforms that support only ETC1, applications could transcode each ETC1S slice to its own ETC1 texture and use two texture samplers simultaneously.
+  > **Note**: On platforms that support only ETC1 RGB, applications could transcode each ETC1S slice to its own ETC1 RGB texture and use two texture samplers simultaneously.
 
-- On desktop GPUs without ETC support, applications should transcode to BC5.
+- On desktop GPUs without EAC RG11 support, applications should transcode both slices to a single [BC5](#bc5) texture.
   > **Note**: Blue channel will return zero during sampling.
 
-- As a last resort, ETC1S data could be decoded to uncompressed RG8 or RGBA8 pixels.
+- As a last resort, ETC1S data could be decoded to uncompressed [RG8](#rg8) or [RGBA8](#rgba8) pixels.
 
 ![ETC1S Target Format Selection Flowchart](figures/ETC1S_targets_red_green.png)
 
@@ -165,7 +185,7 @@ When the texture data uses non-linear sRGB encoding (virtually all color texture
 
 By design, UASTC is optimized for fast and predictable transcoding to ASTC and BC7. Transcoding to ASTC is always lossless (e.g. it would match decoding to RGBA8), transcoding to BC7 is almost lossless.
 
-ASTC should be the default choice when ASTC LDR support is available.
+[ASTC 4x4](#astc-4x4) should be the default choice when ASTC LDR support is available.
 
 > **Note**: At the time of writing, GPUs supporting ASTC LDR include:
 > * Apple A8 and newer, Apple M1
@@ -175,9 +195,10 @@ ASTC should be the default choice when ASTC LDR support is available.
 > * NVIDIA Tegra
 > * Qualcomm Adreno 3xx series and newer
 
-BC7 should be the default choice when BC7 is supported but ASTC isn't. Such platforms include virtually all desktop GPUs.
+[BC7](#bc7) should be the default choice when BC7 is supported but ASTC is not. Such platforms include most desktop GPUs.
 
-When a high-quality output is required (e.g. for normal or other non-color maps) but neither ASTC nor BC7 are supported, UASTC data should be decoded to uncompressed RGBA values. Even when the texture is known to be opaque, it's still usually better to upload it as RGBA instead of RGB due to GPU implementation details.
+When a high-quality output is required (e.g. for normal or other non-color maps) but neither ASTC nor BC7 are supported, UASTC data should be decoded to uncompressed [RGBA8](#rgba8) values.
+> **Note**: Even when the texture is known to be opaque, it's still usually better to upload it as RGBA8 instead of RGB8 due to GPU memory alignment.
 
 ![UASTC Target Format Selection Flowchart](figures/UASTC_targets.png)
 
@@ -187,27 +208,34 @@ Although transcoding to the following formats may result in some quality loss, i
 
 #### ETC
 
-Transcoding UASTC to ETC involves decoding the texture to uncompressed values and re-encoding them as ETC. This process is partly accelerated by ETC-specific hints that are present in UASTC data. Refer to UASTC specification for more details.
+Transcoding UASTC to ETC involves decoding the texture to uncompressed pixels and re-encoding them as ETC. This process is fully implemented by the reference transcoder and partly accelerated by ETC-specific hints that are present in UASTC data.
 
-Depending on alpha channel presence, applications should use the appropriate format enums.
+Opaque UASTC textures should be transcoded to and uploaded as [ETC1 RGB](#etc1-rgb).
+
+UASTC textures with alpha channel should be transcoded to and uploaded as [ETC2 RGBA](#etc2-rgba).
+
 
 #### S3TC (BC1 / BC3)
 
-Transcoding UASTC to S3TC (aka DXT) formats involves decoding the texture to uncompressed values and re-encoding them as BC1 or BC3. Transcoding of RGB data could be partly accelerated by BC1-specific hints that may be present in UASTC data. Refer to UASTC specification for more details.
+Transcoding UASTC to S3TC (aka DXT) formats involves decoding the texture to uncompressed pixels and re-encoding them as [BC1](#bc1-s3tc-rgb) or [BC3](#bc3-s3tc-rgba). This process is fully implemented by the reference transcoder. Transcoding of RGB data could be partly accelerated by BC1-specific hints that may be present in UASTC data.
 
-Depending on alpha channel presence, applications should use the appropriate format enums.
+Opaque UASTC textures should be transcoded to and uploaded as [BC1](#bc1-s3tc-rgb).
+
+UASTC textures with alpha channel should be transcoded to and uploaded as [BC3](#bc3-s3tc-rgba).
 
 #### PVRTC1
 
-Transcoding to PVRTC1 involves decoding the texture to uncompressed values and re-encoding them as PVRTC1.
+Transcoding to UASTC to PVRTC1 involves decoding the texture to uncompressed pixels and re-encoding them as PVRTC1. This process is fully implemented by the reference transcoder.
 
-The reference UASTC to PVRTC1 transcoder supports only power-of-2 textures.
+> **Note**: The reference UASTC to PVRTC1 transcoder supports only power-of-2 textures.
 
-The reference UASTC to PVRTC1 transcoder needs to know whether the alpha channel is used.
+> **Note**: The reference UASTC to PVRTC1 transcoder needs to know whether the alpha channel is used.
+
+> **Note**: Apple hardware may reject non-square PVRTC1 textures.
 
 #### 16-bit packed formats
 
-Sometimes, decoding UASTC to 16-bit packed pixel formats (RGB565 or RGBA4444) may yield better results than transcoding to ETC, BC1/BC3, or PVRTC1 at a cost of increased (about 2x) GPU memory footprint.
+Sometimes, decoding UASTC to [16-bit packed pixel formats](#16-bit-packed-formats-1) (RGB565 or RGBA4444) may yield better results than transcoding to ETC, BC1/BC3, or PVRTC1 at a cost of increased (about 2x) GPU memory footprint.
 
 ## GPU API Support
 
@@ -238,9 +266,9 @@ The transcoded data uses 8 bytes per each 4x4 block.
 | OpenGL | `GL_EXT_texture_compression_s3tc` and `GL_EXT_texture_sRGB` extensions | `GL_COMPRESSED_SRGB_S3TC_DXT1_EXT` | `GL_COMPRESSED_RGB_S3TC_DXT1_EXT` |
 | OpenGL ES | `GL_EXT_texture_compression_s3tc` and `GL_EXT_texture_compression_s3tc_srgb` extensions | `GL_COMPRESSED_SRGB_S3TC_DXT1_EXT` | `GL_COMPRESSED_RGB_S3TC_DXT1_EXT` |
 | Direct3D | `9_1` feature level or higher | `DXGI_FORMAT_BC1_UNORM_SRGB` | `DXGI_FORMAT_BC1_UNORM` |
-| Metal | `MTLGPUFamilyMac1`-compatible GPU | `MTLPixelFormatBC1_RGBA_sRGB` | `MTLPixelFormatBC1_RGBA` |
+| Metal | `MTLGPUFamilyMac1` or `MTLGPUFamilyMacCatalyst1`-compatible GPU | `MTLPixelFormatBC1_RGBA_sRGB` | `MTLPixelFormatBC1_RGBA` |
 
-> **Note**: For Direct3D and Metal, BC1 RGBA enums should be used since these APIs do not expose BC1 RGB. Transcoded blocks produced by the reference transcoder will be sampled correctly anyway.
+> **Note**: For Direct3D and Metal, BC1 RGBA enums are used since these APIs do not expose BC1 RGB. Transcoded blocks produced by the reference transcoder will be sampled correctly anyway.
 
 #### BC3 (S3TC RGBA)
 
@@ -253,7 +281,7 @@ The transcoded data uses 16 bytes per each 4x4 block.
 | OpenGL | `GL_EXT_texture_compression_s3tc` and `GL_EXT_texture_sRGB` extensions | `GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT` | `GL_COMPRESSED_RGBA_S3TC_DXT5_EXT` |
 | OpenGL ES | `GL_EXT_texture_compression_s3tc` and `GL_EXT_texture_compression_s3tc_srgb` extensions | `GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT` | `GL_COMPRESSED_RGBA_S3TC_DXT5_EXT` |
 | Direct3D | `9_1` feature level or higher | `DXGI_FORMAT_BC3_UNORM_SRGB` | `DXGI_FORMAT_BC3_UNORM` |
-| Metal | `MTLGPUFamilyMac1`-compatible GPU | `MTLPixelFormatBC3_RGBA_sRGB` | `MTLPixelFormatBC3_RGBA` |
+| Metal | `MTLGPUFamilyMac1` or `MTLGPUFamilyMacCatalyst1`-compatible GPU | `MTLPixelFormatBC3_RGBA_sRGB` | `MTLPixelFormatBC3_RGBA` |
 
 #### BC4
 
@@ -266,7 +294,7 @@ The transcoded data uses 8 bytes per each 4x4 block.
 | OpenGL | `ARB_texture_compression_rgtc` extension | `GL_COMPRESSED_RED_RGTC1_EXT` |
 | OpenGL ES | `GL_EXT_texture_compression_rgtc` extension | `GL_COMPRESSED_RED_RGTC1_EXT` |
 | Direct3D | `10_0` feature level or higher | `DXGI_FORMAT_BC4_UNORM` |
-| Metal | `MTLGPUFamilyMac1`-compatible GPU | `MTLPixelFormatBC4_RUnorm` |
+| Metal | `MTLGPUFamilyMac1` or `MTLGPUFamilyMacCatalyst1`-compatible GPU | `MTLPixelFormatBC4_RUnorm` |
 
 #### BC5
 
@@ -279,7 +307,7 @@ The transcoded data uses 16 bytes per each 4x4 block.
 | OpenGL | `ARB_texture_compression_rgtc` extension | `GL_COMPRESSED_RED_GREEN_RGTC2_EXT` |
 | OpenGL ES | `GL_EXT_texture_compression_rgtc` extension | `GL_COMPRESSED_RED_GREEN_RGTC2_EXT` |
 | Direct3D | `10_0` feature level or higher | `DXGI_FORMAT_BC5_UNORM` |
-| Metal | `MTLGPUFamilyMac1`-compatible GPU | `MTLPixelFormatBC5_RGUnorm` |
+| Metal | `MTLGPUFamilyMac1` or `MTLGPUFamilyMacCatalyst1`-compatible GPU | `MTLPixelFormatBC5_RGUnorm` |
 
 #### BC7
 
@@ -292,7 +320,7 @@ The transcoded data uses 16 bytes per each 4x4 block.
 | OpenGL | `GL_ARB_texture_compression_bptc` extension | `GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB` | `GL_COMPRESSED_RGBA_BPTC_UNORM_ARB` |
 | OpenGL ES | `GL_EXT_texture_compression_bptc` extension | `GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT` | `GL_COMPRESSED_RGBA_BPTC_UNORM_EXT` |
 | Direct3D | `11_0` feature level | `DXGI_FORMAT_BC7_UNORM_SRGB` | `DXGI_FORMAT_BC7_UNORM` |
-| Metal | `MTLGPUFamilyMac1`-compatible GPU | `MTLPixelFormatBC7_RGBAUnorm_sRGB` | `MTLPixelFormatBC7_RGBAUnorm` |
+| Metal | `MTLGPUFamilyMac1` or `MTLGPUFamilyMacCatalyst1`-compatible GPU | `MTLPixelFormatBC7_RGBAUnorm_sRGB` | `MTLPixelFormatBC7_RGBAUnorm` |
 
 #### ETC1 RGB
 
@@ -313,6 +341,8 @@ The transcoded data uses 8 bytes per each 4x4 block.
 
 > **Note**: The reference transcoder implementation produces blocks that don't use ETC2-specific features thus making it possible to use transcoded data on ETC1 hardware.
 
+> **Note**: Although many desktop GPUs expose `GL_ARB_ES3_compatibility` OpenGL extension, most of them do not have hardware support for ETC1 RGB format and decompress it in the driver instead. At the time of writing, only Intel desktop GPUs newer than "Haswell" support this format natively.
+
 #### ETC2 RGBA
 
 The transcoded data uses 16 bytes per each 4x4 block.
@@ -328,6 +358,23 @@ The transcoded data uses 16 bytes per each 4x4 block.
 
 > **Note**: Applications running on OpenGL ES 2.0 contexts or WebGL contexts backed by OpenGL ES 2.0 may transcode data to two ETC1 textures: one for RGB and another for alpha. Refer to the previous section for more notes on using ETC1 hardware.
 
+> **Note**: Although many desktop GPUs expose `GL_ARB_ES3_compatibility` OpenGL extension, most of them do not have hardware support for ETC2 RGBA format and decompress it in the driver instead. At the time of writing, only Intel desktop GPUs newer than "Haswell" support this format natively.
+
+#### EAC R11
+
+The transcoded data uses 8 bytes per each 4x4 block.
+
+| API | Feature Detection | Linear Format |
+|-|-|-|
+| Vulkan | `textureCompressionETC2` device feature | `VK_FORMAT_EAC_R11_UNORM_BLOCK` |
+| WebGL | `WEBGL_compressed_texture_etc` extension | `COMPRESSED_R11_EAC` |
+| OpenGL | `GL_ARB_ES3_compatibility` extension | `GL_COMPRESSED_R11_EAC` |
+| OpenGL ES | Version 3.0 or higher | `GL_COMPRESSED_R11_EAC` |
+| Direct3D | N/A | N/A |
+| Metal | `MTLGPUFamilyApple1`-compatible GPU | `MTLPixelFormatEAC_R11Unorm` |
+
+> **Note**: Although many desktop GPUs expose `GL_ARB_ES3_compatibility` OpenGL extension, most of them do not have hardware support for EAC R11 format and decompress it in the driver instead. At the time of writing, only Intel desktop GPUs newer than "Haswell" support this format natively.
+
 #### EAC RG11
 
 The transcoded data uses 16 bytes per each 4x4 block.
@@ -340,6 +387,8 @@ The transcoded data uses 16 bytes per each 4x4 block.
 | OpenGL ES | Version 3.0 or higher | `GL_COMPRESSED_RG11_EAC` |
 | Direct3D | N/A | N/A |
 | Metal | `MTLGPUFamilyApple1`-compatible GPU | `MTLPixelFormatEAC_RG11Unorm` |
+
+> **Note**: Although many desktop GPUs expose `GL_ARB_ES3_compatibility` OpenGL extension, most of them do not have hardware support for EAC RG11 format and decompress it in the driver instead. At the time of writing, only Intel desktop GPUs newer than "Haswell" support this format natively.
 
 #### PVRTC1
 
