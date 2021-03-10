@@ -121,7 +121,7 @@ Using ETC1S / BasisLZ data comprises three steps:
 - On older desktops without BC7 support, RGB (single-slice) textures should be transcoded to [BC1](#bc1-s3tc-rgb), while RGBA (dual-slice) textures should be transcoded to [BC3](#bc3-s3tc-rgba).
 
 - Transcoding to [PVRTC1](#pvrtc1-1) is also supported but should be used only if other options are not available.
-  > **Note:** Most platforms and the reference PVRTC1 transcoder support only textures with power-of-2 dimensions.
+  > **Note:** Transcoding to PVRTC1 is supported only for textures that have power-of-two dimensions.
 
   > **Note:** Apple platforms may reject non-square PVRTC1 textures.
 
@@ -143,7 +143,7 @@ Using ETC1S / BasisLZ data comprises three steps:
   > **Note**: Blue channel will have the same value as red during sampling. Green channel will have a slightly different value because BC1 uses more quantization bits for it.
 
 - Transcoding to [PVRTC1](#pvrtc1-1) should be used only if other options are not available.
-  > **Note:** The reference PVRTC1 transcoder supports only textures with power-of-2 dimensions.
+  > **Note:** Transcoding to PVRTC1 is supported only for textures that have power-of-two dimensions.
 
   > **Note:** Apple platforms may reject non-square PVRTC1 textures.
 
@@ -227,7 +227,7 @@ UASTC textures with alpha channel should be transcoded to and uploaded as [BC3](
 
 Transcoding to UASTC to PVRTC1 involves decoding the texture to uncompressed pixels and re-encoding them as PVRTC1. This process is fully implemented by the reference transcoder.
 
-> **Note**: The reference UASTC to PVRTC1 transcoder supports only power-of-2 textures.
+> **Note:** Transcoding to PVRTC1 is supported only for textures that have power-of-two dimensions.
 
 > **Note**: The reference UASTC to PVRTC1 transcoder needs to know whether the alpha channel is used.
 
