@@ -14,7 +14,13 @@ Modern Intel GPUs, namely Intel HD Graphics 5xx ("Skylake") or newer, have the b
 
 3. On Windows, open `chrome://flags/#use-angle` page, select OpenGL as ANGLE graphics backend, and restart the browser.
 
-4. Confirm enabled WebGL extensions here: https://webglreport.com/.
+4. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should include:
+   - [`EXT_texture_compression_bptc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_bptc)
+   - [`EXT_texture_compression_rgtc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_rgtc)
+   - [`WEBGL_compressed_texture_astc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_astc)
+   - [`WEBGL_compressed_texture_etc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_etc)
+   - [`WEBGL_compressed_texture_s3tc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc)
+   - [`WEBGL_compressed_texture_s3tc_srgb`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc_srgb)
 
 ## macOS
 
@@ -24,7 +30,14 @@ Apple M1 SoC supports all possible compressed transcode targets: BC*, ETC*, ASTC
 
 2. Run it with the following cmd-line parameters: `--use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal`.
 
-3. Confirm enabled WebGL extensions here: https://webglreport.com/.
+3. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should include:
+   - [`EXT_texture_compression_bptc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_bptc)
+   - [`EXT_texture_compression_rgtc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_rgtc)
+   - [`WEBGL_compressed_texture_astc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_astc)
+   - [`WEBGL_compressed_texture_etc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_etc)
+   - [`WEBGL_compressed_texture_pvrtc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_pvrtc)
+   - [`WEBGL_compressed_texture_s3tc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc)
+   - [`WEBGL_compressed_texture_s3tc_srgb`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc_srgb)
 
 ## Platform Support Table
 
