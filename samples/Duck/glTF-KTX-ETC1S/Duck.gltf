@@ -1,0 +1,217 @@
+{
+  "asset": {
+    "generator": "COLLADA2GLTF, glTF-Transform v0.9.8 for KTX2",
+    "copyright": "Copyright 2006 Sony Computer Entertainment Inc.",
+    "version": "2.0"
+  },
+  "accessors": [
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 12636,
+      "max": [
+        2398
+      ],
+      "min": [
+        0
+      ],
+      "normalized": false,
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 2399,
+      "max": [
+        0.9995989799499512,
+        0.999580979347229,
+        0.9984359741210938
+      ],
+      "min": [
+        -0.9990839958190918,
+        -1,
+        -0.9998319745063782
+      ],
+      "normalized": false,
+      "bufferView": 1,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 2399,
+      "max": [
+        96.17990112304688,
+        163.97000122070312,
+        53.92519760131836
+      ],
+      "min": [
+        -69.29850006103516,
+        9.929369926452637,
+        -61.32819747924805
+      ],
+      "normalized": false,
+      "bufferView": 1,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 2399,
+      "max": [
+        0.9833459854125977,
+        0.9800369739532471
+      ],
+      "min": [
+        0.026409000158309937,
+        0.01996302604675293
+      ],
+      "normalized": false,
+      "bufferView": 1,
+      "byteOffset": 24
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 25272,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 25272,
+      "byteLength": 76768,
+      "byteStride": 32,
+      "target": 34962
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9986,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/ktx2",
+      "uri": "DuckCM.ktx2"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "Duck0.bin",
+      "byteLength": 102040
+    }
+  ],
+  "materials": [
+    {
+      "name": "blinn3-fx",
+      "alphaMode": "OPAQUE",
+      "doubleSided": false,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "roughnessFactor": 1,
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 0,
+          "texCoord": 0
+        }
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "name": "LOD3spShape",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 2,
+            "TEXCOORD_0": 3
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 0
+        }
+      ]
+    }
+  ],
+  "cameras": [
+    {
+      "type": "perspective",
+      "perspective": {
+        "znear": 1,
+        "zfar": 10000,
+        "yfov": 0.6605925559997559,
+        "aspectRatio": 1.5
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
+      ],
+      "children": [
+        2,
+        1
+      ]
+    },
+    {
+      "translation": [
+        400.1130065917969,
+        463.2640075683594,
+        -431.0780334472656
+      ],
+      "rotation": [
+        -0.12106388300148069,
+        0.8780589498760827,
+        0.30577249018066477,
+        0.34764810052439704
+      ],
+      "camera": 0
+    },
+    {
+      "mesh": 0
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_texture_basisu"
+  ],
+  "extensionsRequired": [
+    "KHR_texture_basisu"
+  ]
+}
