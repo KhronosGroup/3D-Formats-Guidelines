@@ -65,9 +65,10 @@ npm install --global @gltf-transform/cli
 With everything installed, you can now compress your glTF files. There are different compression options available; here are a few methods to get you started. 
 
 ### METHOD 1: UASTC + ETC1S
-Compress normal and occlusion/roughness/metalness textures with UASTC, and all others with ETC1S:
+Compress Normal and Occlusion/Roughness/Metalness (ORM) textures with UASTC, and all others with ETC1S:
 ```
 gltf-transform uastc input.glb output1.glb --level 4 --rdo 4 --slots "{normalTexture,occlusionTexture,metallicRoughnessTexture}" --zstd 18 --verbose
+
 gltf-transform etc1s output1.glb output2.glb --quality 255 --verbose
 ```
 
@@ -79,26 +80,28 @@ gltf-transform etc1s output1.glb output2.glb --quality 255 --verbose
 * `--rdo 4` is a medium quality setting, but makes smaller files. Full range is [.001, 10.0]. Lower values yield higher quality/larger LZ compressed files, higher values yield lower quality/smaller LZ compressed files. A good range to try is [.25, 10]. For normal maps, try a range of [.25, .75].
 * `--slots` lets you include or exclude texture types, using the following setting:
 * `"{normalTexture,occlusionTexture,metallicRoughnessTexture}"` tells glTF Transform to compress only normal and ORM textures with UASTC. To see a list of texture slots in a GLB use the command `gltf-transform inspect input.glb` This will show the dimensions and file sizes for each texture. This is particularly useful to identify the names of the `--slots` so you can apply different compression settings to different texture types.
+* `--zstd 18` applies supercompression. Compression level range is [1, 22], default 18, 0 is uncompressed. Lower values are faster but give less compression. Values above 20 should be used with caution as they require more memory.
 * `--verbose` shows step by step what glTF Transform is doing. On Windows there’s no progress indicator during compression, only the blinking cursor. `--verbose` is helpful as a progress bar to make sure it’s working, and to help you figure out if you included the right options or not. 
 * `--quality 255` in the second step tells glTF-Transform to use the highest quality for ETC1S, but it applies less compression, and it takes longer to compress the files. Use this when quality is more important than conversion speed.
 
 Note this is two separate commands. The 1st command compresses only normal & ORM maps using UASTC. The 2nd command then compresses all the remaining textures using ETC1S. Start the 2nd command only after the 1st is complete. The 2nd command doesn’t need a `--slots "!{normalTexture,occlusionTexture,metallicRoughnessTexture}"` argument to omit the normal/ORM maps, because glTF-Transform will not recompress existing KTX files. It only compresses non-KTX textures.
 
-### METHOD 2: ETC1S
-Compress all textures using ETC1S:
- 
-```
-gltf-transform etc1s input.glb output.glb --verbose
-```
-* This produces the smallest files, and usually creates more blocky artifacts. 
-* Use this when file size and memory size are more important than highest visual quality.
-
-### METHOD 3: UASTC
+### METHOD 2: UASTC
 Compress all textures with UASTC:
 ```
 gltf-transform uastc input.glb output.glb --level 4 --rdo-quality 4 --zstd 18 --verbose
 ```
 * This can produce a larger file, but usually shows less compression artifacts.
+
+### METHOD 3: ETC1S
+Compress all textures using ETC1S:
+ 
+```
+gltf-transform etc1s input.glb output.glb --verbose
+```
+* This produces the smallest files, but usually creates a lot of blocky artifacts. 
+* Use this when file size and memory size are more important than highest visual quality.
+* This also works well if textures use mostly homogenous colors. See the Duck example below.
 
 ### MORE METHODS 
 Try different compression settings and combinations; adjust to your overall goals for size & quality. Isolate settings to specific texture slots. Textures respond differently from each other to the various compression settings, so a little experimentation can yield better results. 
@@ -110,7 +113,7 @@ To learn more about the available settings, type either of these in the command 
 ## Evaluate the Output
 Check compressed files carefully in your viewer of choice. 
 * Look closely, there may be undesirable compression artifacts on different texture types: basecolor, alpha, normal maps, roughness, metalness, occlusion, emissive, etc. 
-* You can find a list of glTF viewers using the [glTF Project Explorer](http://github.khronos.org/glTF-Project-Explorer/).
+* The [glTF Sample Viewer](https://github.khronos.org/glTF-Sample-Viewer-Release/) is a good renderer to try. You can find a list of glTF viewers using the [glTF Project Explorer](http://github.khronos.org/glTF-Project-Explorer/). 
 
 Use the `INSPECT` command to examine the file sizes for each texture and the sizes they will be in GPU memory.
 ```
@@ -226,17 +229,15 @@ The artifacts on the lamp are nearly imperceptible, but the savings are drastic.
 
 ![Lamp chart with compression sizes](figures/lamp-chart.jpg)
 
-### FlightHelmet
+### Duck
 
-This [flight helmet model](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet) from Microsoft uses twelve 2048x2048 PNGs and three 1024x1024 PNGs.
+The [Duck](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Duck) from Sony uses a single 512x512 PNG texture. The mostly-solid color values make it a great candidate for ETC1S compression because it causes few block compression artifacts. It saves only about 2% in file size, but saves about 82% in GPU memory.
 
-![Flight Helmet before and after](figures/helmet-before-after.jpg)
+![Duck before and after](figures/png-vs-etc1s.jpg)
 
-Left: PNG textures, file size 48.37 MB, GPU size 288.44 MB. Right: KTX textures, file size 33.97 MB, GPU size 63.35 MB.
+Left: PNG texture, file size 118 KB, GPU size 1.5 MB. Right: KTX texture, file size 116 KB, GPU size 277 KB.
 
-![Flight helmet chart with compression sizes](figures/helmet-chart.png)
-
-Live demo of the Flight Helmet, comparing PNG and KTX: https://playground.babylonjs.com/#PEFFA8#8
+![Duck chart with compression sizes](figures/data-chart.jpg)
 
 ## KTX Tips and Tricks
 
