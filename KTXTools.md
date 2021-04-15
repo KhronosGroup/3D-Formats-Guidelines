@@ -6,12 +6,13 @@
 
 ## Read/Write KTX textures
 
+- [Binomial Encoder](https://github.com/BinomialLLC/basis_universal): Binomial C/C++, WASM, and CLI encoder, for Basis UASTC and ETC1S texture modes.
 - [KTX-Parse](https://github.com/donmccurdy/KTX-Parse): Lightweight JavaScript/TypeScript/Node.js library for reading and writing KTX files. Transcoding to a GPU compressed format must be handled separately.
 
 ## Transcode KTX to GPU formats
 
-- [Binomial Transcoders](https://github.com/BinomialLLC/basis_universal): Official C/C++ and WASM transcoders, for all Basis input formats and transcoding targets.
-- [Khronos Transcoders](https://github.com/KhronosGroup/Basis-Universal-Transcoders): Lightweight WASM transcoders, for selected Basis input formats and transcoding targets.
+- [Binomial Transcoder](https://github.com/BinomialLLC/basis_universal): Binomial C/C++ and WASM transcoder, for Basis UASTC and ETC1S texture modes.
+- [Khronos Transcoders](https://github.com/KhronosGroup/Basis-Universal-Transcoders): Lightweight WASM transcoders, for Basis UASTC texture mode.
 
 ## View KTX textures
 
