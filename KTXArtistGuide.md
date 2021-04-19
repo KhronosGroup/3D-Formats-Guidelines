@@ -149,6 +149,8 @@ MD format is easier to read directly, and can be pasted directly into a Markdown
 
 ![KTX Options](figures/ktx-options.jpg)
 
+View result:
+
 ![RapidCompact report](figures/rapidcompact-report.jpg)
 
 ## Converting to KTX with Gestaltor
