@@ -143,9 +143,11 @@ MD format is easier to read directly, and can be pasted directly into a Markdown
 
 1. Choose the settings you wish. There are helpful tooltips, and you can learn more via the Documentation link at the bottom of the page.
 
-1. In the Export And Compression step, set the output format to glTF,  change the Texture Compression to Ktx2,  then choose Optimize.
+1. In the Export And Compression step, set the output format to glTF,  change the Texture Compression to Ktx2 (by default using Basis ETCS1, but you can also choose UASTC encoding),  then choose Optimize.
 
 1. When RapidCompact is done processing, you’ll see a report page with an embedded 3D view, where you can preview and download your compressed models.
+
+![KTX Options](figures/ktx-options.jpg)
 
 ![RapidCompact report](figures/rapidcompact-report.jpg)
 
