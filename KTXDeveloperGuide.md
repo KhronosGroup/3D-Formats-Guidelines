@@ -13,9 +13,12 @@
   - [Transcode Target Selection (Red-Green)](#transcode-target-selection-red-green)
 - [UASTC Codec](#uastc-codec)
   - [Overview](#overview-1)
+  - [Data Layout](#data-layout-1)
   - [Runtime usage](#runtime-usage-1)
   - [Primary Transcode Targets](#primary-transcode-targets)
-  - [Additional Transcode Targets](#additional-transcode-targets)
+  - [Additional Transcode Targets (RGB and RGBA)](#additional-transcode-targets-rgb-and-rgba)
+  - [Additional Transcode Targets (Red)](#additional-transcode-targets-red)
+  - [Additional Transcode Targets (Red-Green)](#additional-transcode-targets-red-green)
 - [GPU API Support](#gpu-api-support)
 
 ## KTX Container Format
@@ -81,7 +84,7 @@ After decoding LZ compression, ETC1S data could be losslessly repacked as regula
 
 ETC1S represents a subset of ETC1 so compressed data always has three color channels internally. To support use cases other than opaque color textures, compressed data may contain an extra ETC1S "slice".
 
-> **Note**: In KTX v2 container, each ETC1S slice is marked with a specific `channelType`.
+The ETC1S Data Format Descriptor in KTX v2 container format may have one or two `channelType` entries.
 
 Supported configurations include:
 
@@ -172,6 +175,21 @@ Using ETC1S / BasisLZ data comprises three steps:
 
 UASTC is a virtual block-compressed texture format that is designed for quick and efficient transcoding (i.e. conversion) to hardware-supported block-compressed GPU formats. Being built on top of state of the art ASTC and BC7 texture compression techniques, it can handle all kinds of 8-bit texture data: color maps, normal maps, height maps, etc. By applying RDO (rate-distortion optimization) during encoding, UASTC output can be optimized for subsequent LZ-style lossless compression for more efficient transmission and storage. KTX v2 container format relies on Zstandard for lossless compression.
 
+### Data Layout
+
+UASTC blocks may have from 2 to 4 color channels internally. The encoder chooses different block modes depending on the texture contents. In all cases, only one "slice" of UASTC data is used.
+
+The UASTC Data Format Descriptor in KTX v2 container format has only one `channelType` entry.
+
+Supported configurations include:
+
+| Channels | `channelType` | Typical Usage |
+|-|-|-|
+| RGB | `KHR_DF_CHANNEL_UASTC_RGB` | Opaque color texture |
+| RGBA | `KHR_DF_CHANNEL_UASTC_RGBA` | Color texture with alpha channel |
+| Red | `KHR_DF_CHANNEL_UASTC_RRR` | Single-channel texture |
+| Red-Green | `KHR_DF_CHANNEL_UASTC_RG` | Dual-channel texture |
+
 ### Runtime usage
 
 UASTC textures consist of 4x4 blocks, each block takes exactly 16 bytes. Zstandard compression (when present) must be decoded prior to texture transcoding.
@@ -199,11 +217,15 @@ By design, UASTC is optimized for fast and predictable transcoding to ASTC and B
 When a high-quality output is required (e.g. for normal or other non-color maps) but neither ASTC nor BC7 are supported, UASTC data should be decoded to uncompressed [RGBA8](#rgba8) values.
 > **Note**: Even when the texture is known to be opaque, it's still usually better to upload it as RGBA8 instead of RGB8 due to GPU memory alignment.
 
-![UASTC Target Format Selection Flowchart](figures/UASTC_targets.png)
+Besides RGB and RGBA texture types, UASTC codec may be used for encoding Red and Red-Green textures since it provides better quality than ETC1S. ASTC and BC7 still remain the primary transcode targets while uncompressed [R8](#r8) and [RG8](#rg8) formats are the high-quality fallback options.
 
-### Additional Transcode Targets
+> **Note**: Even when a UASTC texture is known to be of Red or Red-Green type, unused channels may contain non-zero values after transcoding. Applications should sample only from the used channels.
+
+### Additional Transcode Targets (RGB and RGBA)
 
 Although transcoding to the following formats may result in some quality loss, it can sometimes be a better choice than decoding to uncompressed considering reduced GPU memory footprint. Usually, the loss is acceptable for textures containing color data.
+
+![UASTC RGBA Target Format Selection Flowchart](figures/UASTC_targets.png)
 
 #### ETC
 
@@ -212,7 +234,6 @@ Transcoding UASTC to ETC involves decoding the texture to uncompressed pixels an
 Opaque UASTC textures should be transcoded to and uploaded as [ETC1 RGB](#etc1-rgb).
 
 UASTC textures with alpha channel should be transcoded to and uploaded as [ETC2 RGBA](#etc2-rgba).
-
 
 #### S3TC (BC1 / BC3)
 
@@ -235,6 +256,18 @@ Transcoding to UASTC to PVRTC1 involves decoding the texture to uncompressed pix
 #### 16-bit packed formats
 
 Sometimes, decoding UASTC to [16-bit packed pixel formats](#16-bit-packed-formats-1) (RGB565 or RGBA4444) may yield better results than transcoding to ETC, BC1/BC3, or PVRTC1 at a cost of increased (about 2x) GPU memory footprint.
+
+### Additional Transcode Targets (Red)
+
+When both ASTC and BC7 are not available, Red (single-channel) UASTC textures may be transcoded to [EAC R11](#eac-r11) or [BC4](#bc4). Both of these targets would use less GPU memory at runtime than uncompressed [R8](#r8). Transcoding to them involves decoding UASTC and re-encoding so it may be slower than using the decoded data as-is. Unless the texture contains high-contrast high-frequency data, the transcoding quality loss is usually negligible.
+
+![UASTC Red Target Format Selection Flowchart](figures/UASTC_targets_red.png)
+
+### Additional Transcode Targets (Red-Green)
+
+When both ASTC and BC7 are not available, Red-Green (dual-channel) UASTC textures may be transcoded to [EAC RG11](#eac-rg11) or [BC5](#bc5). Both of these targets would use less GPU memory at runtime than uncompressed [RG8](#rg8). Transcoding to them involves decoding UASTC and re-encoding so it may be slower than using the decoded data as-is. Unless the texture contains high-contrast high-frequency data, the transcoding quality loss is usually negligible.
+
+![UASTC Red-Green Target Format Selection Flowchart](figures/UASTC_targets_red_green.png)
 
 ## GPU API Support
 
