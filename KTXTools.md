@@ -19,7 +19,6 @@
 
 - [BabylonJS Sandbox](https://sandbox.babylonjs.com/): allows users to view standalone KTX textures, or glTF models using embedded KTX textures.
 - [Gestaltor Editor](https://gestaltor.io/): Visual glTF editor with KTX read/write support.
-- [Kramv](https://github.com/alecazam/kram): Viewer for BC/ASTC/ETC2 and HDR KTX textures. Windows/macOS with binary releases.
 - [Image Viewer and Tonemapper](https://github.com/kopaka1822/ImageViewer): Can be used for viewing, image comparisons and statistics, tonemapping and mipmap generation. This has experimental KTX 2 support. Windows only.
 
 ## KTX textures in glTF 3D models
