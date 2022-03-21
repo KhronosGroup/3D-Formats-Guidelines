@@ -2,7 +2,7 @@
 
 To ensure that transcoding from the transmission texture formats (i.e. ETC1S or UASTC) to GPU compressed formats works as expected, developers should test their WebGL applications on a wide range of platforms due to differences in compressed format support. Still, there are two setups that provide exceptionally high level of compatibility: modern Intel GPUs (Windows and Linux) and Apple M1 SoC (macOS).
 
-> **Note**: At the time of writing (March 2021), Chromium Dev builds (v.91) should be used as the latest texture-related updates are not in the stable branch yet.
+> **Note**: It is highly recommended to use Chromium Dev builds instead of altering the main Chrome or Edge installation because using non-default ANGLE backend may decrease stability or security.
 
 ## Windows and Linux
 
@@ -12,7 +12,7 @@ Modern Intel GPUs, namely Intel HD Graphics 5xx ("Skylake") or newer, have the b
 
 2. Install [Google Chrome Dev](https://www.google.com/chrome/dev/) or [Microsoft Edge Dev](https://www.microsoftedgeinsider.com/en-us/download/).
 
-3. On Windows, open `chrome://flags/#use-angle` page, select OpenGL as ANGLE graphics backend, and restart the browser.
+3. On Windows, open `about://flags/#use-angle` page, select OpenGL as ANGLE graphics backend, and restart the browser.
 
 4. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should include:
    - [`EXT_texture_compression_bptc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_bptc)
@@ -28,7 +28,7 @@ Apple M1 SoC supports all possible compressed transcode targets: BC*, ETC*, ASTC
 
 1. Install [Google Chrome Dev](https://www.google.com/chrome/dev/) or [Microsoft Edge Dev](https://www.microsoftedgeinsider.com/en-us/download/).
 
-2. Run it with the following cmd-line parameters: `--use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal`.
+2. Open `about://flags/#use-angle` page, select Metal as ANGLE graphics backend, and restart the browser.
 
 3. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should include:
    - [`EXT_texture_compression_bptc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_bptc)
