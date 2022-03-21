@@ -28,7 +28,7 @@ Apple M1 SoC supports all possible compressed transcode targets: BC*, ETC*, ASTC
 
 1. Install [Google Chrome Dev](https://www.google.com/chrome/dev/) or [Microsoft Edge Dev](https://www.microsoftedgeinsider.com/en-us/download/).
 
-2. Open `chrome://flags/#use-angle` page, select Metal as ANGLE graphics backend, and restart the browser.
+2. Open `about://flags/#use-angle` page, select Metal as ANGLE graphics backend, and restart the browser.
 
 3. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should include:
    - [`EXT_texture_compression_bptc`](https://www.khronos.org/registry/webgl/extensions/EXT_texture_compression_bptc)
