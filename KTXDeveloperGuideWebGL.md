@@ -1,8 +1,8 @@
 # KTX 2.0 / Basis Universal Textures — WebGL Tips
 
-To ensure that transcoding from the transmission texture formats (i.e. ETC1S or UASTC) to GPU compressed formats works as expected, developers should test their WebGL applications on a wide range of platforms due to differences in compressed format support. Still, there are two setups that provide exceptionally high level of compatibility: modern Intel GPUs (Windows and Linux) and Apple M1 SoC (macOS).
+To ensure that transcoding from the transmission texture formats (i.e. ETC1S or UASTC) to GPU compressed formats works as expected, developers should test their WebGL applications on a wide range of platforms due to differences in compressed format support. Still, there are two setups that provide exceptionally high level of compatibility: modern Intel GPUs (Windows and Linux) and Apple M1 and newer SoC (macOS).
 
-> **Note**: It is highly recommended to use Chromium Dev builds instead of altering the main Chrome or Edge installation because using non-default ANGLE backend may decrease stability or security.
+> **Warning**: It is highly recommended to use Chromium Dev builds instead of altering the main Chrome or Edge installation because using non-default ANGLE backend may decrease stability or security.
 
 ## Windows and Linux
 
@@ -47,7 +47,7 @@ Apple M1 and newer SoC support all possible compressed transcode targets: BC*, E
 
 2. Ensure that Safari 16 or newer is used.
 
-3. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should be the same as with Chromium-based browsers.
+3. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should be the same as with Chromium-based browsers running on Metal.
 
 ## Platform Support Table
 
