@@ -1,8 +1,8 @@
 # KTX 2.0 / Basis Universal Textures — WebGL Tips
 
-To ensure that transcoding from the transmission texture formats (i.e. ETC1S or UASTC) to GPU compressed formats works as expected, developers should test their WebGL applications on a wide range of platforms due to differences in compressed format support. Still, there are two setups that provide exceptionally high level of compatibility: modern Intel GPUs (Windows and Linux) and Apple M1 SoC (macOS).
+To ensure that transcoding from the transmission texture formats (i.e. ETC1S or UASTC) to GPU compressed formats works as expected, developers should test their WebGL applications on a wide range of platforms due to differences in compressed format support. Still, there are two setups that provide exceptionally high level of compatibility: modern Intel GPUs (Windows and Linux) and Apple M1 and newer SoC (macOS).
 
-> **Note**: It is highly recommended to use Chromium Dev builds instead of altering the main Chrome or Edge installation because using non-default ANGLE backend may decrease stability or security.
+> **Warning**: It is highly recommended to use Chromium Dev builds instead of altering the main Chrome or Edge installation because using non-default ANGLE backend may decrease stability or security.
 
 ## Windows and Linux
 
@@ -24,7 +24,9 @@ Modern Intel GPUs, namely Intel HD Graphics 5xx ("Skylake") or newer, have the b
 
 ## macOS
 
-Apple M1 SoC supports all possible compressed transcode targets: BC*, ETC*, ASTC, and PVRTC1. Most of them are available only via Metal API. Intel-based Macs support only BC* formats.
+Apple M1 and newer SoC support all possible compressed transcode targets: BC*, ETC*, ASTC, and PVRTC1. Most of them are available only via Metal API. Intel-based Macs support only BC* formats.
+
+### Chromium-based browsers
 
 1. Install [Google Chrome Dev](https://www.google.com/chrome/dev/) or [Microsoft Edge Dev](https://www.microsoftedgeinsider.com/en-us/download/).
 
@@ -38,6 +40,14 @@ Apple M1 SoC supports all possible compressed transcode targets: BC*, ETC*, ASTC
    - [`WEBGL_compressed_texture_pvrtc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_pvrtc)
    - [`WEBGL_compressed_texture_s3tc`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc)
    - [`WEBGL_compressed_texture_s3tc_srgb`](https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc_srgb)
+
+### Safari
+
+1. Ensure that macOS 12 Monterey or newer is used.
+
+2. Ensure that Safari 16 or newer is used.
+
+3. Confirm enabled WebGL extensions here: https://webglreport.com/, the list should be the same as with Chromium-based browsers running on Metal.
 
 ## Platform Support Table
 
