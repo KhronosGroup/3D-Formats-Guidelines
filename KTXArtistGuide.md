@@ -2,7 +2,7 @@
 
 ![KTX logo](figures/KTX_100px_Sep20.jpg)
 
-How artists and content creators can compress glTF textures with [Basis Universal texture compression](https://github.com/KhronosGroup/KTX-Software) and the glTF extension [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_basisu/).
+How artists and content creators can compress textures with [Basis Universal texture compression](https://github.com/KhronosGroup/KTX-Software) put them into the [KTX texture container](https://registry.khronos.org/KTX/specs/2.0/ktxspec.v2.html) and add them to a [glTF](https://www.khronos.org/gltf/) model.
 
 ## Why use KTX?
 
@@ -46,7 +46,7 @@ Node.js includes the NPM node package manager, which allows you to run the javas
 
 ![Node.js setup for Windows](figures/nodjs-setup-windows.jpg)
 
-4. You can skip “Tools for Native Modules” step by unsetting the checkbox here:
+4. You can skip “Tools for Native Modules” step by disabling the checkbox here:
 
 ![Node.js setup Tools for Native Modules](figures/nodjs-setup-tools.jpg)
 
@@ -59,7 +59,7 @@ Node.js includes the NPM node package manager, which allows you to run the javas
 1. Install glTF-Transform:
 
 ``` 
-npm install --global @gltf-transform/cli
+npm install --location=global @gltf-transform/cli
 ```
 
 ## Compressing to KTX with glTF-Transform
@@ -77,14 +77,16 @@ gltf-transform etc1s output1.glb output2.glb --quality 255 --verbose
 
 * `gltf-transform` is the tool itself.
 * `uastc` is the compression method. This compresses less than etc1s, but tends to create less blocky artifacts. It creates less artifacts on textures that have uncorrelated RGB values, like ORM maps, than ETC1S does.
-* `input.glb` is the file you want to compress, with PNG and/or JPEG textures inside of it.
-* `output1.glb` is the file you want to save, with the new KTX textures. The first step creates a GLB with some textures in UASTC, keeping the rest in their original formats. The second step then compresses the remaining originals with ETC1S.
+* `input.glb` is the file you want to compress, with PNG and/or JPEG textures inside of it. Rename this to match whatever file is being compressed.
+* `output1.glb` is an interim file to save, with new KTX textures. The first step in the code block above will compress only the normal-bump and occlusion-rough-metal textures using UASTC, keeping the rest in their original formats. Then the second step will compresses the remaining textures using ETC1S.
 * `--level 4` is a high quality setting. It produces the highest achievable quality, but can be very slow. If it's too slow, try 3 instead.
 * `--rdo 4` is a medium quality setting, but makes smaller files. Full range is [.001, 10.0]. Lower values yield higher quality/larger LZ compressed files, higher values yield lower quality/smaller LZ compressed files. A good range to try is [.25, 10]. For normal maps, try a range of [.25, .75].
 * `--slots` lets you include or exclude texture types, using the following setting:
 * `"{normalTexture,occlusionTexture,metallicRoughnessTexture}"` tells glTF Transform to compress only normal and ORM textures with UASTC. To see a list of texture slots in a GLB use the command `gltf-transform inspect input.glb` This will show the dimensions and file sizes for each texture. This is particularly useful to identify the names of the `--slots` so you can apply different compression settings to different texture types.
 * `--zstd 18` applies supercompression. Compression level range is [1, 22], default 18, 0 is uncompressed. Lower values are faster but give less compression. Values above 20 should be used with caution as they require more memory.
 * `--verbose` shows step by step what glTF Transform is doing. On Windows there’s no progress indicator during compression, only the blinking cursor. `--verbose` is helpful as a progress bar to make sure it’s working, and to help you figure out if you included the right options or not.
+* `output1.glb` is the output from the first step of the code block above, which is now used in the second step to compress the rest of the textures using ETC1S.
+* `output2.glb` in the second step is the final fully-compressed model, with all textures in KTX format. Rename this to whatever output name is desired.
 * `--quality 255` in the second step tells glTF-Transform to use the highest quality for ETC1S, but it applies less compression, and it takes longer to compress the files. Use this when quality is more important than conversion speed.
 
 Note this is two separate commands. The 1st command compresses only normal & ORM maps using UASTC. The 2nd command then compresses all the remaining textures using ETC1S. Start the 2nd command only after the 1st is complete. The 2nd command doesn’t need a `--slots "!{normalTexture,occlusionTexture,metallicRoughnessTexture}"` argument to omit the normal/ORM maps, because glTF-Transform will not recompress existing KTX files. It only compresses non-KTX textures.
@@ -143,7 +145,7 @@ MD format is easier to read directly, and can be pasted directly into a Markdown
 
 1. Choose the settings you wish. There are helpful tooltips, and you can learn more via the Documentation link at the bottom of the page.
 
-1. In the Export And Compression step, set the output format to glTF,  change the Texture Compression to Ktx2 (by default using Basis ETCS1, but you can also choose UASTC encoding),  then choose Optimize.
+1. In the Export And Compression step, set the output format to glTF,  change the Texture Compression to Ktx2 (by default using Basis ETC1S, but you can also choose UASTC encoding),  then choose Optimize.
 
 1. When RapidCompact is done processing, you’ll see a report page with an embedded 3D view, where you can preview and download your compressed models.
 
@@ -188,24 +190,22 @@ It’s also possible to convert individual image files to KTX with Basis Univers
 This tool offers the most flexibility and control over all compression options. After converting a texture, the new KTX files will need to be referenced by your glTF file, by either replacing existing textures or adding them as new ones.
 
 ### ETC1S / BasisLZ Parameters
-
 The `toktx` command line tool exposes three main codec parameters related to ETC1S / BasisLZ:
-* **Use ETC1S / BasisLZ** (`--bcmp`)
+* **Use ETC1S / BasisLZ** (`--encode etc1s`)
 * **ETC1S / BasisLZ Compression Level** (`--clevel <level>`): Integer value of [0, 5] range, default is 1. Higher values are slower, but give higher quality.
 * **ETC1S / BasisLZ Quality Level** (`--qlevel <level>`): Integer value of [1, 255] range, default is 128. Lower gives better compression/lower quality/faster. Higher gives less compression/higher quality/slower.
 
 ### UASTC Parameters
 The `toktx` command line tool exposes four UASTC codec parameters:
-* **Quality Level** (`--uastc [<level>]`): Integer value of [0, 4] range, default is 2. 0 - fastest/lowest quality, 3 - slowest practical option, 4 - impractically slow / highest achievable quality.
+* **Quality Level** (`--uastc_quality <level>`): Integer value of [0, 4] range, default is 2. 0 - fastest/lowest quality, 3 - slowest practical option, 4 - impractically slow / highest achievable quality.
 * **RDO Quality Scalar** (`--uastc_rdo_l [<lambda>]`): Enable UASTC RDO post-processing and optionally set UASTC RDO quality scalar (lambda). Lower values yield higher quality/larger LZ compressed files, higher values yield lower quality/smaller LZ compressed files. A good range to try is [.25,10]. For normal maps a good range is [.25,.75]. The full range is [.001,10.0]. Default is 1.0.
 * **RDO Dictionary Byte Length** (`--uastc_rdo_d [<size>]`): Integer value of [256, 65536] range, default is 32768. Lower values lead to faster but less efficient compression.
 * **Zstandard Compression Level** (`--zcmp [<level>]`): Apply Zstandard lossless compression after UASTC compression. The range is [1, 22], the default is 3. Lower values lead to faster processing but give less compression. Values above 20 should be used with caution as they require more memory during compression.
 
 ### Inserting KTX into glTF
-
 Because toktx only compresses the textures but doesn't alter the glTF file itself, you will need to manually update the .glTF code to use your new textures.
 
-* `extensionsUsed` should be inserted (if it doesn't exist already) to add the `KTX_texture_basisu` property.
+* `extensionsUsed` should be inserted (if it doesn't exist already) to add the [KHR_texture_basisu](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_basisu/) property.
 * `extensionsRequired` should be also inserted to add the `KTX_texture_basisu` property, unless your model is ok to be rendered without those textures.
 * In the `textures` section, each texture will need the `KTX_texture_basisu` extension defined.
 
@@ -240,26 +240,31 @@ This [stained glass lamp model](https://github.com/KhronosGroup/glTF-Sample-Mode
 
 ![The whole lamp, before and after](figures/lamp-whole-before-after.jpg)
 
-The artifacts on the lamp are nearly imperceptible, but the savings are drastic. Compressing the textures with KTX reduces the file size to 10 MB, and it becomes 21 MB in GPU memory. That's about 81% of the file size and just 22% of the GPU size!
+The lamp in the middle and at the right are compressed with KTX. The middle lamp uses the highest quality compression settings and the artifacts are nearly imperceptible, but the savings are drastic. Compressing the textures with KTX reduces the file size to 10 MB and it becomes 21 MB in GPU memory, which is about 81% of the file size and just 22% of the GPU size!
 
-![Lamp chart with compression sizes](figures/lamp-chart.jpg)
+![Lamp closeups comparing JPG+PNG, UASTC+ETC1S, and ETC1S](figures/lamp-closeup-comparison.jpg)
 
-The textures were compressed from PNG source files using [toktx](https://github.com/KhronosGroup/KTX-Software#readme) via a combination of compression settings that favored high quality. UASTC was used for packed textures (ORM, Normal, etc.) and ETCS1 for Base Color and Emissive textures, however exceptions were made based on analyzing results... the `glass_basecolor-alpha` and `glass_emissive` textures were changed from ETC1S to UASTC since these were prominently displayed on the model and contained a lot of color variation.
+The compression versions can be examined interactively via these live demonstrations in Babylon.js: 
+* JPG+PNG vs. high quality UASTC+ETC1S https://playground.babylonjs.com/full.html#YD2TXP#23
+* JPG+PNG vs. ETC1S only https://playground.babylonjs.com/full.html#YD2TXP#22 
 
-toktx compression settings:
+The lamp on the far right is compressed only with ETC1S which causes obvious block compression artifacts. This may be acceptable if file and GPU sizes are more important than quality. This demonstrates the importance of fine-tuning compression codecs and settings; as the UASTC+ETC1S example shows these artifacts can be nearly eliminated by implementing more refined compression settings, as demonstrated below.
+
+For the high-quality UASTC+ETC1S version, the textures were compressed from PNG source files using [toktx](https://github.com/KhronosGroup/KTX-Software#readme) via a combination of compression settings that favored high quality. UASTC was used for packed textures (ORM, Normal, etc.) and ETC1S for Base Color and Emissive textures, however exceptions were made based on analyzing results... the `glass_basecolor-alpha` and `glass_emissive` textures were changed from ETC1S to UASTC since these were prominently displayed on the model and contained a lot of color variation.
+
 ```
 set mipmap=--genmipmap
-set uastc=--uastc 4 --uastc_rdo_l .5 --uastc_rdo_d 65536 --zcmp 22
-set uastchq=--uastc 4 --uastc_rdo_l .25 --uastc_rdo_d 65536 --zcmp 22
-set etcs1=--bcmp --clevel 4 --qlevel 255
-toktx %mipmap% %etcs1% StainedGlassLamp_base_basecolor.ktx2 StainedGlassLamp_base_basecolor.png
-toktx %mipmap% %etcs1% StainedGlassLamp_base_emissive.ktx2 StainedGlassLamp_base_emissive.png
+set uastc=--t2 --encode uastc --uastc_quality 4 --uastc_rdo_l .5 --uastc_rdo_d 65536 --zcmp 22
+set uastchq=--t2 --encode uastc --uastc_quality 4 --uastc_rdo_l .25 --uastc_rdo_d 65536 --zcmp 22
+set etc1s=--t2 --encode etc1s --clevel 4 --qlevel 255
+toktx %mipmap% %etc1s% StainedGlassLamp_base_basecolor.ktx2 StainedGlassLamp_base_basecolor.png
+toktx %mipmap% %etc1s% StainedGlassLamp_base_emissive.ktx2 StainedGlassLamp_base_emissive.png
 toktx %mipmap% %uastc% StainedGlassLamp_glass_basecolor-alpha.ktx2 StainedGlassLamp_glass_basecolor-alpha.png
 toktx %mipmap% %uastc% StainedGlassLamp_glass_emissive.ktx2 StainedGlassLamp_glass_emissive.png
-toktx %mipmap% %etcs1% StainedGlassLamp_grill_basecolor-alpha.ktx2 StainedGlassLamp_grill_basecolor-alpha.png
-toktx %mipmap% %etcs1% StainedGlassLamp_grill_emissive.ktx2 StainedGlassLamp_grill_emissive.png
-toktx %mipmap% %etcs1% StainedGlassLamp_hardware_basecolor.ktx2 StainedGlassLamp_hardware_basecolor.png
-toktx %mipmap% %etcs1% StainedGlassLamp_hardware_emissive.ktx2 StainedGlassLamp_hardware_emissive.png
+toktx %mipmap% %etc1s% StainedGlassLamp_grill_basecolor-alpha.ktx2 StainedGlassLamp_grill_basecolor-alpha.png
+toktx %mipmap% %etc1s% StainedGlassLamp_grill_emissive.ktx2 StainedGlassLamp_grill_emissive.png
+toktx %mipmap% %etc1s% StainedGlassLamp_hardware_basecolor.ktx2 StainedGlassLamp_hardware_basecolor.png
+toktx %mipmap% %etc1s% StainedGlassLamp_hardware_emissive.ktx2 StainedGlassLamp_hardware_emissive.png
 toktx %mipmap% %uastchq% --assign_oetf linear --assign_primaries none StainedGlassLamp_base_normal.ktx2 StainedGlassLamp_base_normal.png
 toktx %mipmap% %uastchq% --assign_oetf linear --assign_primaries none StainedGlassLamp_base_occlusion-rough-metal.ktx2 StainedGlassLamp_base_occlusion-rough-metal.png
 toktx %mipmap% %uastc% --assign_oetf linear --assign_primaries none StainedGlassLamp_bulbs_occlusion-rough-metal.ktx2 StainedGlassLamp_bulbs_occlusion-rough-metal.png
@@ -273,6 +278,10 @@ toktx %mipmap% %uastc% --assign_oetf linear --assign_primaries none StainedGlass
 toktx %mipmap% %uastc% --assign_oetf linear --assign_primaries none StainedGlassLamp_steel_occlusion-rough-metal.ktx2 StainedGlassLamp_steel_occlusion-rough-metal.png
 ```
 
+![Lamp chart with compression sizes](figures/lamp-chart.jpg)
+
+As shown above, KTX compression vastly improves the GPU memory cost of the model. 
+
 ### Duck
 
 The [Duck](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Duck) from Sony uses a single 512x512 PNG texture. The mostly-solid color values make it a great candidate for ETC1S compression because it causes few block compression artifacts. It saves only about 2% in file size, but saves about 82% in GPU memory.
@@ -281,7 +290,7 @@ The [Duck](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Du
 
 Left: PNG texture, file size 118 KB, GPU size 1.5 MB. Right: KTX texture, file size 116 KB, GPU size 277 KB.
 
-![Duck chart with compression sizes](figures/data-chart.jpg)
+![Duck chart with compression sizes](figures/duck-chart.jpg)
 
 The duck texture was compressed with glTF-Transform using this command:
 
