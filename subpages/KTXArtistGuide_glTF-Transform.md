@@ -84,7 +84,7 @@ gltf-transform etc1s output1.glb output2.glb --quality 255 --verbose
 
 Compress all textures with UASTC:
 ```
-gltf-transform uastc input.glb output.glb --level 4 --rdo-quality 4 --zstd 18 --verbose
+gltf-transform uastc input.glb output.glb --level 4 --rdo 4 --zstd 18 --verbose
 ```
 * This can produce a larger file, but usually shows less compression artifacts.
 
