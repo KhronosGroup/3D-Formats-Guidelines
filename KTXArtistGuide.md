@@ -19,8 +19,8 @@ When creating assets for single-model display, it may be preferrable to reduce f
 Guides for artist-friendly KTX software that have graphical user interfaces:
 
 * [KTX Guide for Gestaltor](subpages/KTXArtistGuide_Gestaltor.md) is a visual glTF editor with KTX support. Useful for editing individual glTF files, or batch processing via the command line. Free for non-commercial use on glTF files under 2mb. Subscription removes all limits, and gives access to the command line. 
-* [KTX Guide for glTF-Compressor](subpages/KTXArtistGuide_glTF-Compressor.md) is a free web-based 3D viewer with KTX support. Useful for compressing individual glTF files; can save settings for automation elsewhere.
-* [KTX Guide for RapidCompact](subpages/KTXArtistGuide_RapidCompact.md) is an online platform for optimization of 3D data with KTX support.  Free for non-commercial use. Useful for optimizing individual glTF files, or automating batches of files.
+* [KTX Guide for glTF-Compressor](subpages/KTXArtistGuide_glTF-Compressor.md) is a web-based 3D viewer with KTX support. Useful for compressing individual glTF files, or settings can be saved for batch processing elsewhere. Free for use on unlimited glTF files.
+* [KTX Guide for RapidCompact](subpages/KTXArtistGuide_RapidCompact.md) is an online platform for optimization of 3D data with KTX support. Useful for editing individual glTF files, or batch processing via the command line. Free for non-commercial use with up to 20 conversions per month. Subscription removes all limits, and gives access to the command line.
 
 Additional KTX tools are available, which may not be as artist friendly but tend to offer the greateast flexibility and control:
 * [KTX Guide for glTF-Transform](subpages/KTXArtistGuide_glTF-Transform.md) is a command-line tool for glTF editing, including KTX compression.
