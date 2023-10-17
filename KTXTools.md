@@ -26,4 +26,5 @@
 - [Gestaltor Editor](https://gestaltor.io/): Visual glTF editor with KTX read/write support.
 - [gltf-transform](https://gltf-transform.donmccurdy.com/cli.html): CLI tool that allows converting a glTF model’s textures to KTX.
 - [gltfpack](https://github.com/zeux/meshoptimizer/tree/master/gltf): CLI tool that allows converting a glTF model’s textures to KTX.
+- [glTF-Compressor](https://github.khronos.org/glTF-Compressor-Release/): Visual glTF editor with KTX read/write support.
 - [RapidCompact](https://rapidcompact.com/): Online platform for optimization of 3D data.
